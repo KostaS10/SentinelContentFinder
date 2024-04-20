@@ -14,7 +14,7 @@
     .PARAMETER TableNames
         Name of the table/tables in Sentinel which you want to check - required parameter 
     .PARAMETER Path
-        Location where the CSV file will be saved locally - required parameter 
+        Location where the CSV file will be saved locally (full path + file name) - required parameter 
     .NOTES
         AUTHOR= Kosta Sotic
         VERSION= 1.0.0
@@ -122,6 +122,8 @@ foreach ($templateListAR1 in $templateListAR){
   }
 
 Write-Host "Number of Analytics Rules using $TableNames tables: $countRules"
+
+Write-Host "Exporting the data to CSV stored at: $Path"
 
 $array | Export-Csv -NoTypeInformation -QuoteFields "ContentHubSolution", "AnalyticsRule", "IsSolution", "Table" -Path $Path
 
