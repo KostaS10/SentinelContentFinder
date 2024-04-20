@@ -6,7 +6,7 @@ Az Powershell - https://learn.microsoft.com/en-us/powershell/azure/install-azps-
 
 ## How to use?
 
-- Multiple table check - you need to call from pwsh with -Command switch (put in your variables):
+- Multiple table check - you need to call from pwsh with -Command switch (put in your variables): \n
   <code> pwsh.exe -Command .\sentinelContentFinder.ps1 -TenantId '' -subscriptionId '' -WorkspaceName '' -ResourceGroupName '' -TableNames "WindowsEvent,SecurityEvent" -Path "C:\temp\sentinelContentFinderOutput.csv" </code>
 - For checking one table, you can call directly: .\sentinelContentFinderFinder.ps1 -TenantId '' -subscriptionId '' -WorkspaceName '' -ResourceGroupName '' -TableNames 'WindowsEvent' -Path "C:\temp\sentinelContentFinderOutput.csv"
 
