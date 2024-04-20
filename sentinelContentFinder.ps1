@@ -11,8 +11,8 @@
         Resource Group Name where Sentinel is - required parameter
     .PARAMETER WorkspaceName
         Name of Sentinel instance - required parameter
-    .PARAMETER TableName
-        Name of the table in Sentinel which you want to check - required parameter 
+    .PARAMETER TableNames
+        Name of the table/tables in Sentinel which you want to check - required parameter 
     .PARAMETER Path
         Location where the CSV file will be saved locally - required parameter 
     .NOTES
