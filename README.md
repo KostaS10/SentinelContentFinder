@@ -1,5 +1,9 @@
 # SentinelContentFinder
 
+## About
+
+This PowerShell script can be used to search Microsoft Sentinel Content Hub items (Analytics Rules) based on a given data table
+
 ## Prerequisite
 
 Az Powershell - https://learn.microsoft.com/en-us/powershell/azure/install-azps-windows?view=azps-11.5.0&tabs=powershell&pivots=windows-psgallery
