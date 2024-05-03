@@ -1,8 +1,8 @@
 <#
     .SYNOPSIS
-        Script that checks all Analytics Rules in Sentinel Content Hub
+        Script that checks all Analytics Rules Analytics Rules and Hunting Queries in Sentinel Content Hub
     .DESCRIPTION
-        Script that checks all Analytics Rules in Sentinel Content Hub given the particular table. It lists all Analytics Rules (Part of Soluton or Standalone) which use given table.
+        Script that checks all Analytics Rules and Hunting Queries in Sentinel Content Hub given the particular table. It lists all Analytics Rules and Hunting Queries (Part of Soluton or Standalone) which use given table.
     .PARAMETER TenantId
         TenantId for the login process - required parameter
     .PARAMETER SubscriptionId
@@ -14,11 +14,15 @@
     .PARAMETER TableNames
         Name of the table/tables in Sentinel which you want to check - required parameter 
     .PARAMETER Path
-        Location where the CSV file will be saved locally (full path + file name) - required parameter 
+        Location where the CSV file will be saved locally (full path + file name) - optional parameter (C:\Temp\sentinelContentFinder.csv by default) 
+    .PARAMETER AnalyticsRules
+        Specificy the parameter if you only want Analytics Rules from the Content Hub
+    .PARAMETER HuntingQueries
+        Specificy the parameter if you only want Hunting Queries from the Content Hub
     .NOTES
         AUTHOR= Kosta Sotic
-        VERSION= 1.0.0
-        LASTUPDATE= 20/04/2024
+        VERSION= 2.0.0
+        LASTUPDATE= 03/05/2024
     .EXAMPLE
         If you want to check multiple tables, you need to call from pwsh like this (put in your variables): pwsh.exe -Command .\sentinelContentFinder.ps1 -TenantId '' -subscriptionId '' -WorkspaceName '' -ResourceGroupName '' -TableNames "WindowsEvent,SecurityEvent"
         For checking one table, you can call directly: .\sentinelContentFinder.ps1 -TenantId '' -subscriptionId '' -WorkspaceName '' -ResourceGroupName '' -TableNames 'WindowsEvent'
@@ -42,8 +46,14 @@ param (
   [Parameter(Mandatory = $true)]
   [string[]]$TableNames,
 
-  [Parameter(Mandatory = $true)]
-  [string]$Path
+  [Parameter(Mandatory = $false)]
+  [string]$Path = "C:\Temp\sentinelContentFinder.csv",
+
+  [Parameter(Mandatory = $false)]
+  [switch]$AnalyticsRules,
+
+  [Parameter(Mandatory = $false)]
+  [switch]$HuntingQueries
 )
 
 #Login
@@ -73,7 +83,21 @@ $SubscriptionId = (Get-AzContext).Subscription.Id
 
 $templateUri = "https://management.azure.com/subscriptions/$SubscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.OperationalInsights/workspaces/$workspaceName/providers/Microsoft.SecurityInsights/contentProductTemplates?api-version=2024-03-01"
 
-$templateListAR= (Invoke-RestMethod -Method "Get" -Uri $templateUri -Headers $authHeader).value | where {$_.properties.contentKind -eq "AnalyticsRule"} | ConvertTo-Json | ConvertFrom-Json
+if($PSBoundParameters.ContainsKey('AnalyticsRules')){
+
+  $templateListAR= (Invoke-RestMethod -Method "Get" -Uri $templateUri -Headers $authHeader).value | where {$_.properties.contentKind -eq "AnalyticsRule"} | ConvertTo-Json | ConvertFrom-Json
+
+}elseif($PSBoundParameters.ContainsKey('HuntingQueries')){
+  
+  $templateListAR= (Invoke-RestMethod -Method "Get" -Uri $templateUri -Headers $authHeader).value | where {$_.properties.contentKind -eq "HuntingQuery"} | ConvertTo-Json | ConvertFrom-Json
+
+}else{
+
+  $templateListAR= (Invoke-RestMethod -Method "Get" -Uri $templateUri -Headers $authHeader).value | where {$_.properties.contentKind -eq "HuntingQuery" -or $_.properties.contentKind -eq "AnalyticsRule"} | ConvertTo-Json | ConvertFrom-Json
+
+}
+
+Write-Host "Finding content hub items that match the criteria"
 
 foreach ($templateListAR1 in $templateListAR){
 
@@ -86,6 +110,7 @@ foreach ($templateListAR1 in $templateListAR){
     $ruleDisplayName = $contentTemplate.properties.displayName
     $solutionName = $contentTemplate.properties.source.name
     $solutionOrStandalone = $contentTemplate.properties.source.kind
+    $contentKind = $contentTemplate.properties.contentKind
 
     foreach ($TableName in $TableNames){
     if ($contentTemplateQuery -like "*$TableName*"){
@@ -95,19 +120,21 @@ foreach ($templateListAR1 in $templateListAR){
       if($solutionOrStandalone -eq "Solution"){
 
         $object = New-Object -TypeName PSCustomObject -Property @{
-          AnalyticsRule = $ruleDisplayName
+          Name = $ruleDisplayName
+          ContentKind = $contentKind
           IsSolution = 'Yes'
           ContentHubSolution = $solutionName
           Table = $TableName
         }
         
         $array += $object
-        Write-Host "Analytics rule: $ruleDisplayName | Content Hub solution: $solutionName | Table: $TableName"
+        Write-Host "Content Kind: $contentKind | Name: $ruleDisplayName | Content Hub solution: $solutionName | Table: $TableName"
       }
       else{
 
         $object = New-Object -TypeName PSCustomObject -Property @{
-          AnalyticsRule = $ruleDisplayName
+          Name = $ruleDisplayName
+          ContentKind = $contentKind
           IsSolution = 'No'
           ContentHubSolution = 'Standalone Item'
           Table = $TableName
@@ -115,17 +142,17 @@ foreach ($templateListAR1 in $templateListAR){
         
         $array += $object
 
-        Write-Host "Analytics rule: $ruleDisplayName | Content Hub standalone item | Table: $TableName"
+        Write-Host "Content Kind: $contentKind | Name: $ruleDisplayName | Content Hub standalone item | Table: $TableName"
       }
     }
   }
   }
 
-Write-Host "Number of Analytics Rules using $TableNames tables: $countRules"
+Write-Host "Number of content hub items using provided table(s): $countRules"
 
 Write-Host "Exporting the data to CSV stored at: $Path"
 
-$array | Export-Csv -NoTypeInformation -QuoteFields "ContentHubSolution", "AnalyticsRule", "IsSolution", "Table" -Path $Path
+$array | Export-Csv -NoTypeInformation -QuoteFields "ContentHubSolution", "Name", "ContentKind", "IsSolution", "Table" -Path $Path
 
 
 
