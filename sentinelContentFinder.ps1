@@ -148,7 +148,7 @@ foreach ($templateListAR1 in $templateListAR){
   }
   }
 
-if($countRules == 0){
+if($countRules = 0){
   Write-Host "There are no content hub items using provided table(s)"
 }else{
   Write-Host "Number of content hub items using provided table(s): $countRules"
