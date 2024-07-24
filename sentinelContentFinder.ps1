@@ -21,8 +21,8 @@
         Specificy the parameter if you only want Hunting Queries from the Content Hub
     .NOTES
         AUTHOR= Kosta Sotic
-        VERSION= 2.0.0
-        LASTUPDATE= 03/05/2024
+        VERSION= 3.0.0
+        LASTUPDATE= 2024-07-24
     .EXAMPLE
         If you want to check multiple tables, you need to call from pwsh like this (put in your variables): pwsh.exe -Command .\sentinelContentFinder.ps1 -TenantId '' -subscriptionId '' -WorkspaceName '' -ResourceGroupName '' -TableNames "WindowsEvent,SecurityEvent"
         For checking one table, you can call directly: .\sentinelContentFinder.ps1 -TenantId '' -subscriptionId '' -WorkspaceName '' -ResourceGroupName '' -TableNames 'WindowsEvent'
@@ -148,7 +148,7 @@ foreach ($templateListAR1 in $templateListAR){
   }
   }
 
-if($countRules = 0){
+if($countRules -eq 0){
   Write-Host "There are no content hub items using provided table(s)"
 }else{
   Write-Host "Number of content hub items using provided table(s): $countRules"
