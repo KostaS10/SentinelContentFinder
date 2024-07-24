@@ -148,11 +148,17 @@ foreach ($templateListAR1 in $templateListAR){
   }
   }
 
-Write-Host "Number of content hub items using provided table(s): $countRules"
+if($countRules == 0){
+  Write-Host "There are no content hub items using provided table(s)"
+}else{
+  Write-Host "Number of content hub items using provided table(s): $countRules"
+  Write-Host "Exporting the data to CSV stored at: $Path"
+  $array | Export-Csv -NoTypeInformation -QuoteFields "ContentHubSolution", "Name", "ContentKind", "IsSolution", "Table" -Path $Path
+}
 
-Write-Host "Exporting the data to CSV stored at: $Path"
 
-$array | Export-Csv -NoTypeInformation -QuoteFields "ContentHubSolution", "Name", "ContentKind", "IsSolution", "Table" -Path $Path
+
+
 
 
 
